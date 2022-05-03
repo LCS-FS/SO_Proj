@@ -58,17 +58,5 @@ int main(int argc, char* argv[]){
         }
     }
 
-
-    for(int i = 0; i < n; i++){
-        for(int j = 0; j < m; j++) printf("%d ", m1[i][j]);
-        printf("\n");
-    }
-    printf("\n=============\n\n");
-    for(int i = 0; i < n; i++){
-        for(int j = 0; j < m; j++) printf("%d ", m2[i][j]);
-        printf("\n");
-    }
-
-    printf("\n %d", m1[0][0]);
     return 0;
 }
