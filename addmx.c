@@ -66,12 +66,18 @@ int main(int argc, char* argv[]){
     //child processes
     pid_t pids[m];
     int c1, c2;
+
+    //create children
     for(int i = 0; i < m; i++){
         if((pids[i] = fork()) <0){
             perror("fork");
             return 1;
         }
-        else if(pids[i] == 0){
+    }
+
+    //child labour
+    for(int i = 0; i < m; i++){
+        if(pids[i] == 0){
             int index = i;
             //child in charge of column i
             for(int j = 0; j < n; j++){
