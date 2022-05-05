@@ -1,10 +1,5 @@
 #include <stdio.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/uio.h>
-#include <stdlib.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
 
@@ -27,7 +22,7 @@ int main(int argc, char* argv[]){
     //mmap
     int *m1 = mmap(NULL, m*n*sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, 0, 0);
     int *m2 = mmap(NULL, m*n*sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, 0, 0);
-    //int *ms = mmap(NULL, m*n*sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, 0, 0);
+    int *ms = mmap(NULL, m*n*sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, 0, 0);
 
     if(m1 == MAP_FAILED || m2 == MAP_FAILED){
         printf("map failed");
@@ -69,13 +64,22 @@ int main(int argc, char* argv[]){
     }
 
     pid_t pids[m];
+    int c1, c2;
     for(int i = 0; i < m; i++){
         if((pids[i] = fork()) <0){
             perror("fork");
             return 1;
         }
         else if(pids[i] == 0){
-            printf("[child] pid %d from [parent] pid %d\n", getpid(), getppid());
+            int index = i;
+            //child in charge of column i
+            for(int j = 0; j < n; j++){
+                c1= m1[index];
+                c2 = m2[index];
+                ms[index] = c1+c2;
+                index += m;
+            }
+
             return 0;
         }
     }
@@ -84,10 +88,18 @@ int main(int argc, char* argv[]){
     for(int i = 0; i < m; i++){
         if (waitpid(pids[i], NULL, 0) == -1) {
         perror("wait");
-        return EXIT_FAILURE;
+        return -1;
         }
-        printf("child nr %d ended\n", i);
     }
-    printf("parent");
+
+    //parent print result matrix
+    printf("%dx%d\n", n, m);
+    int cnt = 0;
+    for(int i = 0; i < n*m; i++){
+        if(cnt % m == 0 && cnt != 0) printf("\n"); 
+        printf("%d ", ms[i]);
+        cnt++;
+    }
+    printf("\n");
     return 0;
 }
