@@ -18,17 +18,17 @@ int main(int argc, char* argv[]){
     m = c-'0';
     c = fgetc(f);// \n
 
-
     //mmap
     int *m1 = mmap(NULL, m*n*sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, 0, 0);
     int *m2 = mmap(NULL, m*n*sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, 0, 0);
     int *ms = mmap(NULL, m*n*sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, 0, 0);
 
     if(m1 == MAP_FAILED || m2 == MAP_FAILED){
-        printf("map failed");
+        perror("mmap");
         return 1;
     }
-    //read row by row
+
+    //read row by row first file
     for(int row = 0; row < n; row++){
         int cnt = 0;
         c = '0'; //reset c
@@ -49,7 +49,7 @@ int main(int argc, char* argv[]){
     c = fgetc(f);
     c = fgetc(f);
 
-    //read row by row
+    //read row by row 2nd file
     for(int row = 0; row < n; row++){
         int cnt = 0;
         c = '0'; //reset c
@@ -63,6 +63,7 @@ int main(int argc, char* argv[]){
         }
     }
 
+    //child processes
     pid_t pids[m];
     int c1, c2;
     for(int i = 0; i < m; i++){
