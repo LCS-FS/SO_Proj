@@ -17,14 +17,20 @@ int main(int argc, char* argv[]){
 
     int i = 1;
     if(argc == 3){ //-l
-        i = 2;
-        f = fopen(argv[2], "r");
+        if(strcmp("-l", argv[1]) == 0){ //igual a -l
+            i = 2;
+            f = fopen(argv[2], "r");
+        }
+        else{
+            printf("Incorrect use of option in program. Supported option: '-l'\n");
+            return 1;
+        }
     }
     else if(argc == 2){
         f = fopen(argv[1], "r");
     }
     else{
-        printf("Incorrect number of arguments");
+        printf("Incorrect number of arguments\n");
         return 1;
     }
 
