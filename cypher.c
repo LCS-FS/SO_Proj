@@ -5,15 +5,14 @@
 #include <stdbool.h>
 #include <sys/wait.h>
 
-void swapWords(char* quote, char* arr1[], char* arr2[], int nLines);
-
 int main(int argc, char* argv[]){
 
     int pipe1[2], pipe2[2];
-    char quote[10000] = "";
+    char quote[10000] = "Such is the nature of evil";
     int pid;
     char readMessage[10000];
     char input;
+    int index = 0;
 
     if (pipe(pipe1) == -1){
         perror("Unable to create pipe1\n");
@@ -28,23 +27,22 @@ int main(int argc, char* argv[]){
     if (pid != 0){ //pai
         close(pipe1[0]);
         //read input
+        
         input = getchar();
-        while(input != '\0'){
-            strncat(quote, &input, 1);
+        while(input != EOF){
+            quote[index] = input;
+            index++;
             input = getchar();
         }
-        strncat(quote, &input, 1);
-        printf("before child");
+        quote[index] = '\0';
 
         write(pipe1[1], quote, sizeof(quote));
         if (waitpid(pid, NULL, 0) < 0) {
             perror("Cannot wait for child");
         }
         read(pipe2[0], readMessage, sizeof(readMessage));
-        printf("after child");
-        printf("%s", readMessage);
+        printf("\n%s\n", readMessage);
         close(pipe2[1]);
-    //ler a string
     }
     else{ //filho
         close(pipe1[1]);
@@ -52,11 +50,11 @@ int main(int argc, char* argv[]){
         read(pipe1[0], readMessage, sizeof(readMessage));
 
         FILE* cypher;
-        char c;
-        char* arr1[__INT8_MAX__];
-        char* arr2[__INT8_MAX__];
+        char c='a';
+        char arr1[100][100];
+        char arr2[100][100];
         int counter = 0;
-        char word[__INT8_MAX__] = "";
+        char word[100] = "";
 
         cypher = fopen("cypher.txt", "r");
 
@@ -67,11 +65,9 @@ int main(int argc, char* argv[]){
             do {
                 c = fgetc(cypher);
                 if (c == ' ') {
-                    arr1[counter] = malloc(strlen(word) + 1);
                     strcpy(arr1[counter], word);
                     strcpy(word, "");
                 } else if (c == '\n') {
-                    arr2[counter] = malloc(strlen(word) + 1);
                     strcpy(arr2[counter], word);
                     counter++;
                     strcpy(word, "");
@@ -80,20 +76,19 @@ int main(int argc, char* argv[]){
                 }
             } while (c != EOF);
         }
-
         //swap words
         int nLines = counter +1;
         bool found;
         int i = 0;
         char word2[100] = "";
-        char c2;
+        char c2 = 'a';
         char new[10000] = "";
 
         do{
             c2 = readMessage[i];
             i++;
             
-            if(c2 == ' ' || c2 == '.' || c2 == '!' || c2 == '?' || c2 == '\n'){
+            if(c2 == ' ' || c2 == '.' || c2 == '!' || c2 == '?' || c2 == '\n' || c2 == ',' || c2 == ';' || c2 == ':'){
                 if(strcmp(word2, "") == 0){
                     strncat(new, &c2, 1); //passa para a new
                     strcpy(word2, "");
@@ -134,10 +129,7 @@ int main(int argc, char* argv[]){
         
         write(pipe2[1], new, sizeof(new));
         close(pipe2[0]);
+        return EXIT_SUCCESS;
     }
 }
 
-//nLines = counter +1
-void swapWords(char quote[], char* arr1[], char* arr2[], int nLines){
-    
-    }
