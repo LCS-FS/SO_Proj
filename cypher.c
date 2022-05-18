@@ -3,39 +3,80 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <sys/wait.h>
 
-char new[1000] = "";
+char new[10000] = "";
 
 void swapWords(char* quote, char* cy1[], char* cy2[], int nLines);
 
-int main(int argc, char* argv[]){ 
-    char cQuote;
+int main(int argc, char* argv[]){
+
     int pipe1[2], pipe2[2];
-    char quote[__INT_MAX__] = "";
+    char quote[10000] = "";
     int pid;
+    char readMessage[10000] = "";
 
     if (pipe(pipe1) == -1){
-        printf("Unable to create pipe1\n");
+        perror("Unable to create pipe1\n");
     }
 
     if (pipe(pipe2) == -1){
-    printf("Unable to create pipe2\n");
+        perror("Unable to create pipe2\n");
     }
 
     pid = fork();
 
     if (pid != 0){ //pai
-    
-
-    close(pipe1[0]);
-    close(pipe2[1]);
-
+        close(pipe1[0]);
+        fgets(quote, sizeof(quote), stdin);
+        write(pipe1[1], quote, sizeof(quote));
+        if (waitpid(pid, NULL, 0) < 0) {
+            perror("Cannot wait for child");
+        }
+        read(pipe2[0], readMessage, sizeof(readMessage));
+        printf("%s", readMessage);
+        close(pipe2[1]);
     //ler a string
-    
     }
     else{ //filho
-    close(pipe1[1]);
-    close(pipe2[0]);
+        close(pipe1[1]);
+
+        read(pipe1[0], readMessage, sizeof(readMessage));
+
+        FILE* cypher;
+        char c;
+        char* arr1[__INT8_MAX__];
+        char* arr2[__INT8_MAX__];
+        int counter = 0;
+        char word[__INT8_MAX__] = "";
+
+        cypher = fopen("cypher.txt", "r");
+
+        if (cypher == NULL){
+            perror("Cypher file missing");
+        }
+        else {
+            do {
+                c = fgetc(cypher);
+                if (c == ' ') {
+                    arr1[counter] = malloc(strlen(word) + 1);
+                    strcpy(arr1[counter], word);
+                    strcpy(word, "");
+                } else if (c == '\n') {
+                    arr2[counter] = malloc(strlen(word) + 1);
+                    strcpy(arr2[counter], word);
+                    counter++;
+                    strcpy(word, "");
+                } else {
+                    strncat(word, &c, 1);
+                }
+            } while (c != EOF);
+        }
+
+        swapWords(quote, arr1, arr2, counter+1);
+        
+        write(pipe2[1], new, sizeof(new));
+        close(pipe2[0]);
     }
 }
 
