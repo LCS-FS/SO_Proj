@@ -88,7 +88,7 @@ int main(int argc, char* argv[]){
             c2 = readMessage[i];
             i++;
             
-            if(c2 == ' ' || c2 == '.' || c2 == '!' || c2 == '?' || c2 == '\n' || c2 == ',' || c2 == ';' || c2 == ':'){
+            if(c2 == ' ' || c2 == '.' || c2 == '!' || c2 == '?' || c2 == '\n' || c2 == ',' || c2 == ';' || c2 == ':' || c2 == '"' || c2 == '\''){
                 if(strcmp(word2, "") == 0){
                     strncat(new, &c2, 1); //passa para a new
                     strcpy(word2, "");
